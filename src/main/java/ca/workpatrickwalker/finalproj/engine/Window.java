@@ -1,5 +1,6 @@
 package ca.workpatrickwalker.finalproj.engine;
 
+import ca.workpatrickwalker.finalproj.util.Time;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.util.Objects;
@@ -20,6 +21,7 @@ public class Window
     private static final int VSYNC_ENABLED = 1;
     
     private static Window instance = null;
+    private static Scene activeScene;
     
     private float b;
     private float g;
@@ -74,6 +76,24 @@ public class Window
         instance.g = g;
         instance.b = b;
     }
+    
+    public static void setScene(int scene)
+    {
+        if (scene == Scene.LEVEL_EDITOR)
+        {
+            activeScene = new LevelEditorScene();
+            activeScene.init();
+        }
+        else if (scene == Scene.LEVEL)
+        {
+            activeScene = new LevelScene();
+            activeScene.init();
+        }
+        else
+        {
+            assert false : "Invalid scene code '" + scene + "' provided.";
+        }
+    }
 
     public void destroy()
     {
@@ -113,20 +133,35 @@ public class Window
 
         glfwShowWindow(window);
 
-        // Have LWJGL find the current context, create the GLCapabilities instance for it and make its bindings available for use
+        // Have LWJGL find the current context, create the GLCapabilities instance for it and make its bindings 
+        // available for use
         GL.createCapabilities();
     }
 
     public void loop()
     {
+        float frameElapsed = -1.0f;
+        float timeAtFrameStart = Time.getElapsed();
+        float timeAtFrameEnd;
+        
         while (!glfwWindowShouldClose(window))
         {
             glfwPollEvents();
 
             glClearColor(r, g, b, A);
             glClear(GL_COLOR_BUFFER_BIT);
-
+            
+            if (frameElapsed >= 0)
+            {
+                activeScene.update(frameElapsed);
+            }
+            
             glfwSwapBuffers(window);
+            MouseListener.refresh();
+            
+            timeAtFrameEnd = Time.getElapsed();
+            frameElapsed = timeAtFrameEnd - timeAtFrameStart;
+            timeAtFrameStart = timeAtFrameEnd;
         }
     }
 }
