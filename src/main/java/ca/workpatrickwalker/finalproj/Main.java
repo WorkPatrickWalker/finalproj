@@ -9,5 +9,6 @@ public class Main
         Window.set(Window.HD_WIDTH, Window.HD_HEIGHT, Window.DEFAULT_TITLE);
         Window.get().init();
         Window.get().loop();
+        Window.get().destroy();
     }
 }
